@@ -1,8 +1,10 @@
 const express = require("express");
 const userModel = require("./Models/user");
+const postModel = require("./Models/post");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const post = require("./Models/post");
 
 const app = express();
 
@@ -13,8 +15,7 @@ app.use(cookieParser());
 
 const port = 3000;
 
-app.get("/", isLoggedIn, (req, res) => {
-  console.log(req.user);
+app.get("/", (req, res) => {
   res.render("index");
 });
 
@@ -22,7 +23,40 @@ app.get("/login", (_, res) => {
   res.render("login");
 });
 
-app.post("/register",  async (req, res) => {
+app.get("/profile", isLoggedIn, async (req, res) => {
+  const user = await userModel
+    .findOne({ email: req.user.email })
+    .populate("post");
+  res.render("profile", { user });
+});
+
+app.post("/post", isLoggedIn, async (req, res) => {
+  const user = await userModel.findOne({ email: req.user.email });
+  const createPost = await postModel.create({
+    user: user._id,
+    content: req.body.post,
+  });
+  console.log(createPost);
+
+  user.post.push(createPost._id);
+
+  await user.save();
+  res.redirect("/profile");
+});
+
+app.get("/like/:id", isLoggedIn, async (req, res) => {
+  const post = await postModel.findOne({ _id: req.params.id }).populate('user');
+  const likesIn = post.likes.indexOf(req.user.userid);
+  if (likesIn === -1) {
+    post.likes.push(req.user.id);
+  } else {
+    post.likes.splice(likesIn, 1);
+  }
+  await post.save();
+  res.redirect("/profile");
+});
+
+app.post("/register", async (req, res) => {
   const { username, name, age, email, password } = req.body;
   const user = await userModel.findOne({ email });
   if (user) res.status(500).send("User already Registered");
@@ -53,7 +87,7 @@ app.post("/login", async (req, res) => {
     if (result) {
       const token = jwt.sign({ email, userId: user._id }, "hahahah");
       res.cookie("token", token);
-      res.status(200).send("You can login");
+      res.status(200).redirect("/profile");
     } else res.redirect("/login");
   });
 });
@@ -64,7 +98,7 @@ app.get("/logout", (_, res) => {
 });
 
 function isLoggedIn(req, res, next) {
-  if (req.cookies.token === "") res.send("You much be Login");
+  if (req.cookies.token === "") res.redirect("/login");
   else {
     const data = jwt.verify(req.cookies.token, "hahahah");
     req.user = data;
