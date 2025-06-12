@@ -13,14 +13,16 @@ app.use(cookieParser());
 
 const port = 3000;
 
-app.get("/", (_, res) => {
+app.get("/", isLoggedIn, (req, res) => {
+  console.log(req.user);
   res.render("index");
 });
+
 app.get("/login", (_, res) => {
   res.render("login");
 });
 
-app.post("/register", async (req, res) => {
+app.post("/register",  async (req, res) => {
   const { username, name, age, email, password } = req.body;
   const user = await userModel.findOne({ email });
   if (user) res.status(500).send("User already Registered");
@@ -60,5 +62,14 @@ app.get("/logout", (_, res) => {
   res.cookie("token", "");
   res.redirect("/login");
 });
+
+function isLoggedIn(req, res, next) {
+  if (req.cookies.token === "") res.send("You much be Login");
+  else {
+    const data = jwt.verify(req.cookies.token, "hahahah");
+    req.user = data;
+    next();
+  }
+}
 
 app.listen(port);
