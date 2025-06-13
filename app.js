@@ -20,6 +20,17 @@ app.get("/", (req, res) => {
   res.render("index");
 });
 
+app.get("/profile/upload", (req, res) => {
+  res.render("profilePicUp");
+});
+
+app.post("/upload", isLoggedIn ,multer.single("image"), async (req, res) => {
+  const user = await userModel.findOne({ email: req.user.email });
+  user.profile = req.file.filename;
+  await user.save();
+  res.redirect('/profile');
+});
+
 app.get("/login", (_, res) => {
   res.render("login");
 });

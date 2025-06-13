@@ -12,13 +12,15 @@
         <a class="bg-red-500 rounded-md px-4 py-2 font-bold" href="/logout"
           >Logout</a
         >
-        <div class="flex items-start justify-center gap-4">
-          <div class="w-10 h-10 rounded overflow-hidden">
-            <img
-              class="w-full h-full rounded-full"
-              src="<%=user.profile %> "
-              alt=""
-            />
+        <div class="flex items-center justify-center gap-4">
+          <div class="w-20 h-20 rounded overflow-hidden">
+            <a href="/profile/upload">
+              <img
+                class="w-full h-full rounded-full"
+                src="/image/uploads/<%= user.profile %> "
+                alt="<%= user.name %>"
+              />
+            </a>
           </div>
           <h1 class="text-3xl text-center font-bold">Hello <%= user.name %></h1>
         </div>
