@@ -12,7 +12,16 @@
         <a class="bg-red-500 rounded-md px-4 py-2 font-bold" href="/logout"
           >Logout</a
         >
-        <h1 class="text-3xl text-center font-bold">Hello <%= user.name %></h1>
+        <div class="flex items-start justify-center gap-4">
+          <div class="w-10 h-10 rounded overflow-hidden">
+            <img
+              class="w-full h-full rounded-full"
+              src="<%=user.profile %> "
+              alt=""
+            />
+          </div>
+          <h1 class="text-3xl text-center font-bold">Hello <%= user.name %></h1>
+        </div>
         <form action="/post" method="post">
           <div class="w-full flex flex-col items-center justify-center gap-4">
             <textarea
@@ -48,7 +57,11 @@
                     href="/like/<%= post._id %>"
                     ><%= post.likes.length ? "UnLike" : "Like" %>
                   </a>
-                  <a class="text-blue-500 cursor-pointer">Edit</a>
+                  <a
+                    class="text-blue-500 cursor-pointer"
+                    href="/edit/<%= post._id %>"
+                    >Edit</a
+                  >
                 </div>
               </div>
             </div>

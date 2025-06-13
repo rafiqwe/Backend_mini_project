@@ -4,14 +4,15 @@ const postModel = require("./Models/post");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const post = require("./Models/post");
-
+const multer = require("./multer/multer");
+const path = require("path");
 const app = express();
 
 app.set("view engine", "ejs");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "public")));
 
 const port = 3000;
 
@@ -45,7 +46,7 @@ app.post("/post", isLoggedIn, async (req, res) => {
 });
 
 app.get("/like/:id", isLoggedIn, async (req, res) => {
-  const post = await postModel.findOne({ _id: req.params.id }).populate('user');
+  const post = await postModel.findOne({ _id: req.params.id }).populate("user");
   const likesIn = post.likes.indexOf(req.user.userid);
   if (likesIn === -1) {
     post.likes.push(req.user.id);
@@ -53,6 +54,24 @@ app.get("/like/:id", isLoggedIn, async (req, res) => {
     post.likes.splice(likesIn, 1);
   }
   await post.save();
+  res.redirect("/profile");
+});
+
+app.get("/edit/:id", isLoggedIn, async (req, res) => {
+  const post = await postModel.findOne({ _id: req.params.id });
+  res.render("edit", { post });
+});
+
+app.post("/update/:id", async (req, res) => {
+  const editData = await postModel.findOneAndUpdate(
+    { _id: req.params.id },
+    {
+      content: req.body.edit,
+    },
+    { new: true }
+  );
+  console.log(req.body.edit);
+
   res.redirect("/profile");
 });
 
